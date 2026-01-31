@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import QuestionCard from './components/QuestionCard';
 import AttributeSurvey from './components/AttributeSurvey';
 import ResultDisplay from './components/ResultDisplay';
 import { calculateMatch } from './utils/MatchEngine';
 import { useVoteData } from './hooks/useVoteData';
+
+// GAS Web App URL (Replace with your actual URL)
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzx03HnQGpUUctfPcjvEkvZMEGY-o65J03AWpJGdZyDyRUm-rBCQDJpgDg519NlQYK6/exec";
 
 function App() {
     const { questions, parties, loading, error } = useVoteData();
@@ -12,6 +15,43 @@ function App() {
     const [answers, setAnswers] = useState({});
     const [surveyData, setSurveyData] = useState(null);
     const [matchResults, setMatchResults] = useState([]);
+
+    // Debug logging
+    console.log("App Render:", { step, loading, error });
+
+    // Send results to Google Sheets when step becomes 'result'
+    useEffect(() => {
+        if (step === 'result' && matchResults.length > 0 && surveyData) {
+            const sendData = async () => {
+                try {
+                    const payload = {
+                        age: surveyData.age,
+                        gender: surveyData.gender,
+                        area: surveyData.region,
+                        options: surveyData.attributes,
+                        match_p1: matchResults[0].name
+                    };
+
+                    // console.log("Sending data to GAS:", payload);
+
+                    await fetch(GAS_API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', // 'cors' is better if GAS returns headers, but 'no-cors' is safer for avoiding browser errors with opaque responses if setup is tricky
+                        headers: {
+                            'Content-Type': 'application/json', // Note: no-cors mode converts this to update/plain or similar, but GAS `e.postData.contents` handles it.
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    console.log("Data sent to Google Sheets");
+
+                } catch (error) {
+                    // Do not alert user, just log error context
+                    console.error("Failed to save results:", error);
+                }
+            };
+            sendData();
+        }
+    }, [step, matchResults, surveyData]);
 
     // Flow: Intro -> Survey -> Question -> Result
     const handleStart = () => {
