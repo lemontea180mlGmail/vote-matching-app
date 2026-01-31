@@ -24,7 +24,20 @@ function App() {
         if (step === 'result' && matchResults.length > 0 && surveyData) {
             const sendData = async () => {
                 try {
+                    // Anonymous User ID Logic
+                    let userId = localStorage.getItem('vote_matching_user_id');
+                    if (!userId) {
+                        try {
+                            userId = crypto.randomUUID();
+                        } catch (e) {
+                            // Fallback for older browsers if needed, or simple random string
+                            userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                        }
+                        localStorage.setItem('vote_matching_user_id', userId);
+                    }
+
                     const payload = {
+                        userId: userId,
                         age: surveyData.age,
                         gender: surveyData.gender,
                         area: surveyData.region,
@@ -89,6 +102,13 @@ function App() {
         }
     };
 
+    const handleBack = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+            window.scrollTo(0, 0);
+        }
+    };
+
     // Loading & Error States
     if (loading) {
         return (
@@ -143,6 +163,7 @@ function App() {
                         current={currentQuestionIndex + 1}
                         total={questions.length}
                         onAnswer={handleAnswer}
+                        onBack={handleBack}
                     />
                 )}
 

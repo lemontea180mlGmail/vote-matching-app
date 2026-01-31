@@ -1,7 +1,7 @@
 import React from 'react';
 import { OPTIONS } from '../data/questions';
 
-export default function QuestionCard({ question, current, total, onAnswer }) {
+export default function QuestionCard({ question, current, total, onAnswer, onBack }) {
     return (
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden p-6 md:p-10 animate-fade-in-up">
             <div className="flex justify-between items-center mb-8">
@@ -37,6 +37,17 @@ export default function QuestionCard({ question, current, total, onAnswer }) {
                     </button>
                 ))}
             </div>
+
+            {current > 1 && (
+                <div className="mt-8 text-center">
+                    <button
+                        onClick={onBack}
+                        className="text-gray-500 hover:text-gray-700 font-medium text-sm underline transition-colors"
+                    >
+                        前の質問に戻る
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

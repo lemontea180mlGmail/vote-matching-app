@@ -16,15 +16,16 @@ function doPost(e) {
         // シートがない場合は作成し、ヘッダーを設定
         if (!sheet) {
             sheet = ss.insertSheet('User_Results');
-            sheet.appendRow(['Time_Stamp', 'Age', 'Gender', 'Area', 'Option', 'Match_P1']);
+            sheet.appendRow(['User_ID', 'Time_Stamp', 'Age', 'Gender', 'Area', 'Option', 'Match_P1']);
         }
 
         // 2. データのパース
         const postData = JSON.parse(e.postData.contents);
 
-        // 3. 行データの作成 (Time_Stamp, Age, Gender, Area, Option, Match_P1)
+        // 3. 行データの作成 (User_ID, Time_Stamp, Age, Gender, Area, Option, Match_P1)
         const rowData = [
-            new Date(),                         // Time_Stamp (サーバー時刻)
+            postData.userId || '',              // User_ID (New Column A)
+            Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss'), // Time_Stamp (JST)
             postData.age || '',                 // Age
             postData.gender || '',              // Gender
             postData.area || '',                // Area (Region)
