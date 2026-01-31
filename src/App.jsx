@@ -78,8 +78,11 @@ function App() {
                         <h1 className="text-4xl md:text-5xl font-extrabold text-blue-600 mb-6 tracking-tight">
                             Vote Match
                         </h1>
-                        <p className="text-gray-600 mb-10 leading-relaxed text-lg">
+                        <p className="text-gray-600 mb-4 leading-relaxed text-lg">
                             1分であなたに合う政党が分かります
+                        </p>
+                        <p className="text-xl font-bold text-gray-800 mb-10">
+                            衆議院選挙2026
                         </p>
                         <button
                             onClick={handleStart}

@@ -51,6 +51,8 @@ export default function AttributeSurvey({ onSubmit }) {
         "正社員",
         "派遣社員・契約社員",
         "パート・アルバイト",
+        "統一教会員",
+        "創価学会員",
         "公務員",
         "会社役員",
         "自営業・フリーランス",
