@@ -1,10 +1,38 @@
 import React, { useState } from 'react';
+import { Twitter, Share2 } from 'lucide-react';
 
 export default function ResultDisplay({ results, questions }) {
     const [selectedParty, setSelectedParty] = useState(null);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [showShareToast, setShowShareToast] = useState(false);
 
     const topMatch = results[0];
+    const shareUrl = window.location.href;
+    const shareText = `私のボートマッチング結果は【1位：${topMatch.name}（一致度：${topMatch.matchRate}%）】でした！あなたの考えに近い政党はどこ？ #ボートマッチング #選挙`;
+
+    const handleShareTwitter = () => {
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
+    const handleShareNative = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Vote Matching Result',
+                    text: shareText,
+                    url: shareUrl,
+                });
+            } catch (error) {
+                console.error('Error sharing:', error);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+            setShowShareToast(true);
+            setTimeout(() => setShowShareToast(false), 3000);
+        }
+    };
 
     const handlePartyClick = (party) => {
         if (selectedParty?.id === party.id) {
@@ -55,7 +83,6 @@ export default function ResultDisplay({ results, questions }) {
         <div className={`w-full max-w-2xl pb-10 transition-opacity duration-300 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
 
             {/* Top Banner - Hide when in focused mode to save space/focus */}
-            {/* Top Banner - Hide when in focused mode to save space/focus */}
             {!selectedParty && (
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 animate-fade-in-up">
                     <div
@@ -72,12 +99,40 @@ export default function ResultDisplay({ results, questions }) {
                     </div>
 
                     <div className="p-8 text-center md:text-left">
-                        <p className="text-gray-600 leading-relaxed text-lg">
+                        <p className="text-gray-600 leading-relaxed text-lg mb-6">
                             あなたの回答は、<span className="font-bold text-gray-800">{topMatch.name}</span>の政策と高い一致度を示しました。
                             {topMatch.matchRate > 80
                                 ? '多くの項目で意見が共有されており、非常に相性が良いと言えます。'
                                 : 'いくつかの重要なポイントで意見が近く、支持を検討する価値があります。'}
                         </p>
+
+                        {/* Social Share Buttons */}
+                        <div>
+                            <p className="text-sm font-bold text-gray-500 mb-3 text-center md:text-left">結果をみんなに教える</p>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                                <button
+                                    onClick={handleShareTwitter}
+                                    className="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all hover:scale-105"
+                                >
+                                    <Twitter size={20} fill="white" />
+                                    Xでポスト
+                                </button>
+                                <button
+                                    onClick={handleShareNative}
+                                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-5 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all hover:scale-105 border border-gray-200"
+                                >
+                                    <Share2 size={20} />
+                                    共有する
+                                </button>
+                            </div>
+
+                            {/* Toast Notification */}
+                            {showShareToast && (
+                                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg text-sm animate-fade-in-up z-50">
+                                    リンクとテキストをコピーしました！
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
