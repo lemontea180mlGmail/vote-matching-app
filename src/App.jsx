@@ -102,7 +102,7 @@ function App() {
                 setMatchResults(results);
                 setStep('result');
                 window.scrollTo(0, 0);
-            }, 2500);
+            }, 4000);
         }
     };
 

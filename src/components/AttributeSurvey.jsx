@@ -169,19 +169,50 @@ export default function AttributeSurvey({ onSubmit }) {
                     </button>
 
                     {isDropdownOpen && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                            <div className="p-2 space-y-1">
-                                {ATTRIBUTE_OPTIONS.map((attr) => (
-                                    <label key={attr} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.attributes.includes(attr)}
-                                            onChange={() => handleAttributeToggle(attr)}
-                                            className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                                        />
-                                        <span className="text-sm text-gray-700">{attr}</span>
-                                    </label>
-                                ))}
+                        <div
+                            className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity"
+                            onClick={() => setIsDropdownOpen(false)}
+                        >
+                            <div
+                                className="bg-white w-full max-w-lg rounded-t-2xl md:rounded-2xl shadow-2xl max-h-[85vh] flex flex-col animate-slide-up"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl md:rounded-t-2xl">
+                                    <h3 className="font-bold text-gray-800">属性を選択（複数可）</h3>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                        className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
+                                    >
+                                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div className="p-4 overflow-y-auto space-y-1">
+                                    {ATTRIBUTE_OPTIONS.map((attr) => (
+                                        <label key={attr} className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer border border-transparent hover:border-gray-100 transition-all active:scale-[0.99]">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.attributes.includes(attr)}
+                                                onChange={() => handleAttributeToggle(attr)}
+                                                className="rounded text-blue-600 focus:ring-blue-500 h-5 w-5 border-gray-300"
+                                            />
+                                            <span className="text-base text-gray-700">{attr}</span>
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-none md:rounded-b-2xl pb-safe">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                        className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-md"
+                                    >
+                                        決定する
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
