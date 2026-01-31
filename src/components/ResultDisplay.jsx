@@ -252,8 +252,40 @@ export default function ResultDisplay({ results, questions }) {
                                                 return null;
                                             }
 
-                                            const isMatch = item.diff === 0;
-                                            const isFar = item.diff > 1.0;
+                                            // Matrix-based Comparison Logic
+                                            let resultText = '無評価';
+                                            let resultColor = 'text-gray-400';
+
+                                            const u = item.userVal;
+                                            const p = item.partyVal;
+                                            const is = (a, b) => Math.abs(a - b) < 0.1;
+
+                                            if (u !== null && u !== undefined && p !== null && p !== undefined) {
+                                                if (is(u, 0.0)) {
+                                                    // User Neither
+                                                    if (is(p, 0.0)) {
+                                                        resultText = '一致！';
+                                                        resultColor = 'text-green-600';
+                                                    }
+                                                } else if (is(p, 0.0)) {
+                                                    // Party Neither (User not 0.0) -> No Eval
+                                                } else {
+                                                    const diff = Math.abs(u - p);
+                                                    if (diff < 0.1) {
+                                                        resultText = '一致！';
+                                                        resultColor = 'text-green-600';
+                                                    } else if (diff <= 0.6) {
+                                                        resultText = '近い';
+                                                        resultColor = 'text-yellow-600';
+                                                    } else if (diff <= 1.6) {
+                                                        resultText = '遠い';
+                                                        resultColor = 'text-orange-500';
+                                                    } else {
+                                                        resultText = '不一致！';
+                                                        resultColor = 'text-red-600';
+                                                    }
+                                                }
+                                            }
 
                                             return (
                                                 <div key={item.qId} className="bg-white p-3 rounded-lg border border-gray-100 text-sm">
@@ -272,8 +304,8 @@ export default function ResultDisplay({ results, questions }) {
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className={`mt-2 text-center text-xs font-bold ${isMatch ? 'text-green-600' : isFar ? 'text-red-500' : 'text-yellow-600'}`}>
-                                                        {isMatch ? '一致！' : isFar ? '意見が異なります' : '近いです'}
+                                                    <div className={`mt-2 text-center text-xs font-bold ${resultColor}`}>
+                                                        {resultText}
                                                     </div>
                                                 </div>
                                             );
