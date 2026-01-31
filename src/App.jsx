@@ -93,12 +93,16 @@ function App() {
                 window.scrollTo(0, 0);
             }, 250);
         } else {
-            // Finished questions -> Calculate and show results
-            const results = calculateMatch(newAnswers, parties, questions);
-            setMatchResults(results);
-
-            setStep('result');
+            // Finished questions -> Show calculating screen then results
+            setStep('calculating');
             window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                const results = calculateMatch(newAnswers, parties, questions);
+                setMatchResults(results);
+                setStep('result');
+                window.scrollTo(0, 0);
+            }, 2500);
         }
     };
 
@@ -165,6 +169,16 @@ function App() {
                         onAnswer={handleAnswer}
                         onBack={handleBack}
                     />
+                )}
+
+                {step === 'calculating' && (
+                    <div className="bg-white rounded-2xl shadow-xl p-10 text-center animate-fade-in-up w-full max-w-md">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">あなたと政党の相性を<br />分析しています...</h2>
+                        <div className="flex justify-center mb-6">
+                            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
+                        </div>
+                        <p className="text-gray-500 animate-pulse">しばらくお待ちください</p>
+                    </div>
                 )}
 
                 {step === 'result' && (
