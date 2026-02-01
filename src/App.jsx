@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QuestionCard from './components/QuestionCard';
 import AttributeSurvey from './components/AttributeSurvey';
 import ResultDisplay from './components/ResultDisplay';
+import CutInComponent from './components/CutInComponent';
 import { calculateMatch } from './utils/MatchEngine';
 import { useVoteData } from './hooks/useVoteData';
 
@@ -15,6 +16,7 @@ function App() {
     const [answers, setAnswers] = useState({});
     const [surveyData, setSurveyData] = useState(null);
     const [matchResults, setMatchResults] = useState([]);
+    const [showCutIn, setShowCutIn] = useState(false);
 
     // Debug logging
     console.log("App Render:", { step, loading, error });
@@ -80,30 +82,57 @@ function App() {
         window.scrollTo(0, 0);
     };
 
+    const proceedToNext = (currentAnswers) => {
+        if (currentQuestionIndex < questions.length - 1) {
+            setTimeout(() => {
+                setCurrentQuestionIndex(currentQuestionIndex + 1);
+                window.scrollTo(0, 0);
+            }, 250);
+        } else {
+            setStep('calculating');
+            window.scrollTo(0, 0);
+            setTimeout(() => {
+                const results = calculateMatch(currentAnswers, parties, questions); // Pass current answers
+                setMatchResults(results);
+                setStep('result');
+                window.scrollTo(0, 0);
+            }, 2500);
+        }
+    };
+
     const handleAnswer = (value) => {
         // Save answer
         const questionId = questions[currentQuestionIndex].id;
         const newAnswers = { ...answers, [questionId]: value };
         setAnswers(newAnswers);
 
-        if (currentQuestionIndex < questions.length - 1) {
-            // Next question
-            setTimeout(() => {
-                setCurrentQuestionIndex(currentQuestionIndex + 1);
-                window.scrollTo(0, 0);
-            }, 250);
-        } else {
-            // Finished questions -> Show calculating screen then results
-            setStep('calculating');
-            window.scrollTo(0, 0);
+        // Check Cut-In Trigger Conditions
+        // 1. Attribute includes "統一教会員"
+        // 2. Question ID is 2
+        // 3. Answer is 1.0 (Very Agree)
+        const isTargetAttribute = surveyData?.attributes?.includes('統一教会員');
+        const isTargetQuestion = questionId === 2; // ID check
+        const isTargetAnswer = value === 1.0;
 
-            setTimeout(() => {
-                const results = calculateMatch(newAnswers, parties, questions);
-                setMatchResults(results);
-                setStep('result');
-                window.scrollTo(0, 0);
-            }, 4000);
+        if (isTargetAttribute && isTargetQuestion && isTargetAnswer) {
+            setShowCutIn(true);
+            // CutInComponent calls onComplete to proceed
+        } else {
+            // Normal flow
+            proceedToNext(newAnswers);
         }
+    };
+
+    const handleCutInComplete = () => {
+        setShowCutIn(false);
+        // Proceed using state values. 
+        // Note: answers state update might be batched, but usually OK for next render.
+        // For last question case, we need to ensure calculateMatch uses latest answers.
+
+        // We need to pass the latest answers to proceedToNext, as `answers` state might not be updated yet
+        // due to React's state batching.
+        const latestAnswers = { ...answers, [questions[currentQuestionIndex].id]: answers[questions[currentQuestionIndex].id] };
+        proceedToNext(latestAnswers);
     };
 
     const handleBack = () => {
@@ -136,6 +165,7 @@ function App() {
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans text-gray-800">
             <div className="w-full max-w-2xl flex flex-col items-center">
+                {showCutIn && <CutInComponent onComplete={handleCutInComplete} />}
 
                 {step === 'intro' && (
                     <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center animate-fade-in-up max-w-md w-full">
