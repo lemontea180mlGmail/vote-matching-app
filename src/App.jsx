@@ -5,7 +5,7 @@ import ResultDisplay from './components/ResultDisplay';
 import EffectsRenderer from './components/EffectsRenderer';
 import { calculateMatch } from './utils/MatchEngine';
 import { useVoteData } from './hooks/useVoteData';
-import { checkEffectTrigger } from './logic/EffectTriggers';
+import { checkEffectTrigger, EFFECT_TYPES } from './logic/EffectTriggers';
 
 // GAS Web App URL (Replace with your actual URL)
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzx03HnQGpUUctfPcjvEkvZMEGY-o65J03AWpJGdZyDyRUm-rBCQDJpgDg519NlQYK6/exec";
@@ -116,18 +116,43 @@ function App() {
     };
 
     const handleEffectComplete = () => {
+        // Special Handling for Pachinko Cut-In: Force LDP 100%
+        if (activeEffect === EFFECT_TYPES.PACHINKO_CUT_IN) {
+            setActiveEffect(null);
+
+            // Show Calculating Screen First
+            setStep('calculating');
+            window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                const forcedResults = parties.map(p => {
+                    let rate = 0;
+                    if (p.id === 'jimin') rate = 100;
+                    else if (p.id === 'chudo') rate = 5;
+
+                    return {
+                        ...p,
+                        matchRate: rate,
+                        detailedBreakdown: [] // Empty detailed breakdown
+                    };
+                }).sort((a, b) => b.matchRate - a.matchRate);
+
+                setMatchResults(forcedResults);
+                setStep('result');
+                window.scrollTo(0, 0);
+            }, 2500); // Wait 2.5s like normal flow
+
+            return;
+        }
+
         setActiveEffect(null);
 
+        // Normal proceeding for other effects (if any in future)
         // We need to pass the latest answers to proceedToNext
         // Note: 'answers' state might not be updated yet in this closure if react batching hasn't flushed
-        // so we manually reconstruct the intended state for processing
-        const latestAnswers = { ...answers, [questions[currentQuestionIndex].id]: answers[questions[currentQuestionIndex].id] };
-
-        // However, if the effect component waited for user input (like the PUSH button), 
-        // the 'answers' state likely HAS updated. But being defensive is safer.
-        // Actually, if answers state hasn't updated, accessing it here would be stale.
-        // But since setActiveEffect caused a re-render, and handleEffectComplete is closed over that render scope...
-        // Let's rely on the fact that handleAnswer updated the state.
+        // so we manually reconstruct the intended state for processing.
+        // But proceedToNext relies on currentQuestionIndex + 1 logic or calculating on final.
+        // If we are not forcing results, we likely just proceed to next question.
 
         proceedToNext(answers);
     };
@@ -182,7 +207,7 @@ function App() {
                         >
                             スタート
                         </button>
-                        <p className="mt-4 text-xs text-gray-400">v0.9.0</p>
+                        <p className="mt-4 text-xs text-gray-400">v0.9.1</p>
                     </div>
                 )}
 
