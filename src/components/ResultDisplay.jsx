@@ -138,7 +138,7 @@ export default function ResultDisplay({ results, questions }) {
                                     className="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all hover:scale-105"
                                 >
                                     <Twitter size={20} fill="white" />
-                                    Xでポスト
+                                    Xで共有
                                 </button>
                                 <button
                                     onClick={handleShareNative}
