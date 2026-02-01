@@ -1,3 +1,4 @@
+//この質問は実際には使用されておらず、スプレッドシートから読込されている
 export const QUESTIONS = [
     {
         id: 1,
@@ -51,6 +52,7 @@ export const QUESTIONS = [
     },
 ];
 
+//質問への回答の選択肢は使用されている
 export const OPTIONS = [
     { label: "とても賛成", value: 1.0, color: "bg-blue-600 text-white" },
     { label: "基本的に賛成", value: 0.5, color: "bg-blue-400 text-white" },

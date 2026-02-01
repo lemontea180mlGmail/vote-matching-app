@@ -143,7 +143,7 @@ function App() {
                             Vote Match
                         </h1>
                         <p className="text-gray-600 mb-4 leading-relaxed text-lg">
-                            最速10秒であなたに合う政党が分かります
+                            政治に詳しくなくても最速10秒で<br />あなたに合う政党が分かります
                         </p>
                         <p className="text-xl font-bold text-gray-800 mb-10">
                             衆議院選挙2026
@@ -154,6 +154,7 @@ function App() {
                         >
                             スタート
                         </button>
+                        <p className="mt-4 text-xs text-gray-400">v0.8.0</p>
                     </div>
                 )}
 
