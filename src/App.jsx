@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import QuestionCard from './components/QuestionCard';
 import AttributeSurvey from './components/AttributeSurvey';
 import ResultDisplay from './components/ResultDisplay';
-import CutInComponent from './components/CutInComponent';
+import EffectsRenderer from './components/EffectsRenderer';
 import { calculateMatch } from './utils/MatchEngine';
 import { useVoteData } from './hooks/useVoteData';
+import { checkEffectTrigger } from './logic/EffectTriggers';
 
 // GAS Web App URL (Replace with your actual URL)
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzx03HnQGpUUctfPcjvEkvZMEGY-o65J03AWpJGdZyDyRUm-rBCQDJpgDg519NlQYK6/exec";
@@ -16,7 +17,9 @@ function App() {
     const [answers, setAnswers] = useState({});
     const [surveyData, setSurveyData] = useState(null);
     const [matchResults, setMatchResults] = useState([]);
-    const [showCutIn, setShowCutIn] = useState(false);
+
+    // activeEffect stores the ID of the effect to show (null if none)
+    const [activeEffect, setActiveEffect] = useState(null);
 
     // Debug logging
     console.log("App Render:", { step, loading, error });
@@ -44,23 +47,21 @@ function App() {
                         gender: surveyData.gender,
                         area: surveyData.region,
                         options: surveyData.attributes,
-                        match_p1: matchResults[0].name
+                        match_p1: matchResults[0]?.name || 'Unknown',
+                        // Add other survey data if needed
                     };
-
-                    // console.log("Sending data to GAS:", payload);
 
                     await fetch(GAS_API_URL, {
                         method: 'POST',
-                        mode: 'no-cors', // 'cors' is better if GAS returns headers, but 'no-cors' is safer for avoiding browser errors with opaque responses if setup is tricky
+                        mode: 'no-cors',
                         headers: {
-                            'Content-Type': 'application/json', // Note: no-cors mode converts this to update/plain or similar, but GAS `e.postData.contents` handles it.
+                            'Content-Type': 'application/json',
                         },
                         body: JSON.stringify(payload)
                     });
                     console.log("Data sent to Google Sheets");
 
                 } catch (error) {
-                    // Do not alert user, just log error context
                     console.error("Failed to save results:", error);
                 }
             };
@@ -68,16 +69,13 @@ function App() {
         }
     }, [step, matchResults, surveyData]);
 
-    // Flow: Intro -> Survey -> Question -> Result
     const handleStart = () => {
         setStep('survey');
-        setCurrentQuestionIndex(0);
-        setAnswers({});
+        window.scrollTo(0, 0);
     };
 
     const handleSurveySubmit = (data) => {
         setSurveyData(data);
-        console.log('Survey Data:', data);
         setStep('question');
         window.scrollTo(0, 0);
     };
@@ -106,33 +104,32 @@ function App() {
         const newAnswers = { ...answers, [questionId]: value };
         setAnswers(newAnswers);
 
-        // Check Cut-In Trigger Conditions
-        // 1. Attribute includes "統一教会員"
-        // 2. Question ID is 2
-        // 3. Answer is 1.0 (Very Agree)
-        const isTargetAttribute = surveyData?.attributes?.includes('統一教会員');
-        const isTargetQuestion = questionId === 2; // ID check
-        const isTargetAnswer = value === 1.0;
+        // Check for Trigger Effects
+        const effectId = checkEffectTrigger(surveyData, questionId, value);
 
-        if (isTargetAttribute && isTargetQuestion && isTargetAnswer) {
-            setShowCutIn(true);
-            // CutInComponent calls onComplete to proceed
+        if (effectId) {
+            setActiveEffect(effectId);
         } else {
             // Normal flow
             proceedToNext(newAnswers);
         }
     };
 
-    const handleCutInComplete = () => {
-        setShowCutIn(false);
-        // Proceed using state values. 
-        // Note: answers state update might be batched, but usually OK for next render.
-        // For last question case, we need to ensure calculateMatch uses latest answers.
+    const handleEffectComplete = () => {
+        setActiveEffect(null);
 
-        // We need to pass the latest answers to proceedToNext, as `answers` state might not be updated yet
-        // due to React's state batching.
+        // We need to pass the latest answers to proceedToNext
+        // Note: 'answers' state might not be updated yet in this closure if react batching hasn't flushed
+        // so we manually reconstruct the intended state for processing
         const latestAnswers = { ...answers, [questions[currentQuestionIndex].id]: answers[questions[currentQuestionIndex].id] };
-        proceedToNext(latestAnswers);
+
+        // However, if the effect component waited for user input (like the PUSH button), 
+        // the 'answers' state likely HAS updated. But being defensive is safer.
+        // Actually, if answers state hasn't updated, accessing it here would be stale.
+        // But since setActiveEffect caused a re-render, and handleEffectComplete is closed over that render scope...
+        // Let's rely on the fact that handleAnswer updated the state.
+
+        proceedToNext(answers);
     };
 
     const handleBack = () => {
@@ -142,7 +139,6 @@ function App() {
         }
     };
 
-    // Loading & Error States
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -154,7 +150,7 @@ function App() {
     if (error) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 text-center">
-                <div className="bg-white p-8 rounded-xl shadow-lg">
+                <div className="bg-white p-8 rounded-xl shadow-lg text-center">
                     <h2 className="text-xl font-bold text-red-600 mb-4">エラーが発生しました</h2>
                     <p className="text-gray-600">データの読み込みに失敗しました。<br />インターネット接続を確認して再読み込みしてください。</p>
                 </div>
@@ -165,7 +161,9 @@ function App() {
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans text-gray-800">
             <div className="w-full max-w-2xl flex flex-col items-center">
-                {showCutIn && <CutInComponent onComplete={handleCutInComplete} />}
+
+                {/* Effect Overlay */}
+                <EffectsRenderer effectType={activeEffect} onComplete={handleEffectComplete} />
 
                 {step === 'intro' && (
                     <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center animate-fade-in-up max-w-md w-full">
