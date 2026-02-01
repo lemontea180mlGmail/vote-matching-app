@@ -182,7 +182,7 @@ function App() {
                         >
                             スタート
                         </button>
-                        <p className="mt-4 text-xs text-gray-400">v0.8.0</p>
+                        <p className="mt-4 text-xs text-gray-400">v0.9.0</p>
                     </div>
                 )}
 

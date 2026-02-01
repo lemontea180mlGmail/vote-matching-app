@@ -23,26 +23,28 @@ export default function CutInComponent({ onComplete }) {
                 style={{ animationDuration: '2s' }}
             ></div>
 
-            {/* カットイン画像コンテナ */}
-            <div className="relative w-full h-64 md:h-96 bg-black border-y-8 border-yellow-400 transform -skew-x-12 animate-slide-in-right shadow-[0_0_50px_rgba(255,255,0,0.8)] overflow-hidden flex items-center justify-center pointer-events-none">
+            {/* テキストエフェクト (画像の上に中央配置) */}
+            <div className="absolute top-20 left-0 w-full flex justify-center z-50 pointer-events-none">
+                <div className="text-yellow-300 font-black italic text-6xl md:text-8xl drop-shadow-[5px_5px_0_#ff0000] animate-bounce stroke-text">
+                    CHANCE!
+                </div>
+            </div>
+
+            {/* カットイン画像コンテナ - PC/スマホで表示範囲を統一 */}
+            <div className="relative w-full h-80 bg-black border-y-8 border-yellow-400 transform -skew-x-12 animate-slide-in-right shadow-[0_0_50px_rgba(255,255,0,0.8)] overflow-hidden flex items-center justify-center pointer-events-none">
 
                 {/* 激しい点滅オーバーレイ */}
                 <div className="absolute inset-0 bg-white opacity-0 animate-flash z-20"></div>
 
-                {/* 画像：目力～頭の先まで（半分から上）を表示 */}
-                <div className="w-full h-full absolute inset-0 animate-shake flex items-end justify-center overflow-hidden">
+                {/* 画像：目力～頭の先まで（予備トリミング済み画像を使用） */}
+                <div className="absolute inset-0 animate-shake flex items-end justify-center overflow-hidden">
                     <img
-                        src="/image/takaichi.jpg"
+                        src="/image/takaichi2.jpg"
                         alt="Cut In"
-                        className="w-full h-[200%] object-cover object-top filter contrast-125 brightness-110 drop-shadow-2xl"
-                        style={{ transform: 'translateY(0%)' }} // 画像の上半分を表示
+                        className="w-full h-full object-cover object-center filter contrast-125 brightness-110 drop-shadow-2xl"
                     />
                 </div>
-
-                {/* テキストエフェクト（オプション） */}
-                <div className="absolute bottom-16 right-4 text-yellow-300 font-black italic text-6xl md:text-8xl drop-shadow-[5px_5px_0_#ff0000] animate-bounce z-10 stroke-text">
-                    CHANCE!
-                </div>
+                {/* Text removed from here */}
             </div>
 
             {/* 3D飛び出しボタン ("!!" デザイン) - リアル挙動（枠固定・ボタン沈下） */}
