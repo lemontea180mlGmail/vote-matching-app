@@ -30,7 +30,7 @@ export default function ResultDisplay({ results, questions }) {
     }, []);
 
     const topMatch = results[0];
-    const shareUrl = window.location.href;
+    const shareUrl = "https://vote-matching-app-mfn2.vercel.app/";
     const shareText = `私のボートマッチング結果は【1位：${topMatch.name}（一致度：${topMatch.matchRate}%）】でした！あなたの考えに近い政党はどこ？ #ボートマッチング #選挙`;
 
     const handleShareTwitter = () => {
@@ -133,13 +133,15 @@ export default function ResultDisplay({ results, questions }) {
                         <div>
                             <p className="text-sm font-bold text-gray-500 mb-3 text-center md:text-left">結果をみんなに教える</p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                                <button
-                                    onClick={handleShareTwitter}
-                                    className="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all hover:scale-105"
+                                <a
+                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all hover:scale-105 no-underline"
                                 >
                                     <Twitter size={20} fill="white" />
                                     Xで共有
-                                </button>
+                                </a>
                                 <button
                                     onClick={handleShareNative}
                                     className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-5 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all hover:scale-105 border border-gray-200"
