@@ -207,7 +207,7 @@ function App() {
                         >
                             スタート
                         </button>
-                        <p className="mt-4 text-xs text-gray-400">v0.9.1</p>
+                        <p className="mt-4 text-xs text-gray-400">v0.9.2</p>
                     </div>
                 )}
 
